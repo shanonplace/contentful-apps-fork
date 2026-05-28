@@ -22,7 +22,7 @@ const Sidebar = () => {
 
   return (
     <Flex flexDirection="column" gap="spacingM">
-      <Text fontColor="gray500">Populate content across similar locales</Text>
+      <Text fontColor="gray500">Populate content across locales</Text>
       <Button isFullWidth onClick={openDialog}>
         {APP_NAME}
       </Button>

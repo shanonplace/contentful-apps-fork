@@ -1,5 +1,5 @@
 import { DialogAppSDK } from '@contentful/app-sdk';
-import { Box, Button, Flex, Form, Skeleton } from '@contentful/f36-components';
+import { Button, Flex, Form, Skeleton } from '@contentful/f36-components';
 import { useAutoResizer, useSDK } from '@contentful/react-apps-toolkit';
 import { ContentTypeProps, EntryProps } from 'contentful-management';
 import { useEffect, useMemo, useState } from 'react';
@@ -182,7 +182,7 @@ const Dialog = () => {
         marginBottom="spacingM"
         className={styles.container}>
         {currentStep === 'locale-selection' && (
-          <Box>
+          <>
             <LocaleSelectionStep
               availableLocales={mappedLocales}
               selectedSourceLocale={selectedSourceLocale}
@@ -198,7 +198,7 @@ const Dialog = () => {
               missingSourceLocale={missingSourceLocale}
               missingTargetLocales={missingTargetLocales}
             />
-            <Flex justifyContent="flex-end" gap="spacingM">
+            <Flex justifyContent="flex-end" gap="spacingM" className={styles.stickyFooter}>
               <Button onClick={() => sdk.close()}>Cancel</Button>
               <Button
                 variant="primary"
@@ -208,7 +208,7 @@ const Dialog = () => {
                 Next
               </Button>
             </Flex>
-          </Box>
+          </>
         )}
 
         {currentStep === 'preview' && selectedSourceLocale && (

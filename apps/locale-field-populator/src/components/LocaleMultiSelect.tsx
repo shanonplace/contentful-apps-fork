@@ -37,6 +37,24 @@ const LocaleMultiSelect: React.FC<LocaleMultiSelectProps> = ({
     }
   };
 
+  // "Select all" operates on the currently visible (filtered) locales so it
+  // stays consistent with an active search.
+  const allFilteredSelected =
+    filteredLocales.length > 0 &&
+    filteredLocales.every((locale) => selectedLocales.some((l) => l.code === locale.code));
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const toAdd = filteredLocales.filter(
+        (locale) => !selectedLocales.some((l) => l.code === locale.code)
+      );
+      onSelectionChange([...selectedLocales, ...toAdd]);
+    } else {
+      const filteredCodes = new Set(filteredLocales.map((l) => l.code));
+      onSelectionChange(selectedLocales.filter((l) => !filteredCodes.has(l.code)));
+    }
+  };
+
   return (
     <Multiselect
       className={isInvalid ? styles.invalid : undefined}
@@ -45,9 +63,15 @@ const LocaleMultiSelect: React.FC<LocaleMultiSelectProps> = ({
         onSearchValueChange: (event) => setSearchValue(event.target.value),
       }}
       placeholder="Select one or more"
-      popoverProps={{ isFullWidth: true, listMaxHeight: 110 }}
+      popoverProps={{ isFullWidth: true, listMaxHeight: 180 }}
       currentSelection={selectedLocales.map((l) => l.name)}
       triggerButtonProps={{ isDisabled }}>
+      {filteredLocales.length > 0 && (
+        <Multiselect.SelectAll
+          onSelectItem={(e) => handleSelectAll(e.target.checked)}
+          isChecked={allFilteredSelected}
+        />
+      )}
       {filteredLocales.map((locale) => (
         <Multiselect.Option
           key={`multiselect-locale-${normalizeLocaleCode(locale.code)}`}

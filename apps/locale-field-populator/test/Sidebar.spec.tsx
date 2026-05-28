@@ -18,7 +18,7 @@ describe('Sidebar component', () => {
   it('should display text and button', () => {
     render(<Sidebar />);
 
-    expect(screen.getByText('Populate content across similar locales')).toBeInTheDocument();
+    expect(screen.getByText('Populate content across locales')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: APP_NAME })).toBeInTheDocument();
   });
 

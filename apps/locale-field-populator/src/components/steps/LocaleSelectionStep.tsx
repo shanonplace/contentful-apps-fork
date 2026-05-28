@@ -1,7 +1,7 @@
-import { Flex, Subheading, FormControl, Select } from '@contentful/f36-components';
+import { Flex, Subheading, FormControl, Select, Switch } from '@contentful/f36-components';
 import { isSameLocaleFamily, normalizeLocaleCode, SimplifiedLocale } from '../../utils/locales';
 import LocaleMultiSelect from '../LocaleMultiSelect';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 interface LocaleSelectionStepProps {
   availableLocales: SimplifiedLocale[];
@@ -22,6 +22,8 @@ const LocaleSelectionStep = ({
   missingSourceLocale,
   missingTargetLocales,
 }: LocaleSelectionStepProps) => {
+  const [restrictToSimilarLocales, setRestrictToSimilarLocales] = useState(true);
+
   const availableTargetLocales: SimplifiedLocale[] = useMemo(() => {
     if (!selectedSourceLocale) {
       return availableLocales;
@@ -29,17 +31,33 @@ const LocaleSelectionStep = ({
     return availableLocales.filter(
       (locale) =>
         selectedSourceLocale !== locale.code &&
-        isSameLocaleFamily(selectedSourceLocale, locale.code)
+        (!restrictToSimilarLocales || isSameLocaleFamily(selectedSourceLocale, locale.code))
     );
-  }, [availableLocales, selectedSourceLocale]);
+  }, [availableLocales, selectedSourceLocale, restrictToSimilarLocales]);
 
   const onSourceLocaleSelected = (newSourceLocale: string) => {
-    const newSelectedTargetLocales = selectedTargetLocales.filter((locale) =>
-      isSameLocaleFamily(newSourceLocale, locale.code)
+    const newSelectedTargetLocales = selectedTargetLocales.filter(
+      (locale) =>
+        locale.code !== newSourceLocale &&
+        (!restrictToSimilarLocales || isSameLocaleFamily(newSourceLocale, locale.code))
     );
 
     onSourceLocaleChange(newSourceLocale);
     onTargetLocalesChange(newSelectedTargetLocales);
+  };
+
+  const onRestrictToggle = (restrict: boolean) => {
+    setRestrictToSimilarLocales(restrict);
+
+    // When re-enabling the similarity filter, drop any selected target locales
+    // that are no longer visible so the selection stays in sync with the options.
+    if (restrict && selectedSourceLocale) {
+      onTargetLocalesChange(
+        selectedTargetLocales.filter((locale) =>
+          isSameLocaleFamily(selectedSourceLocale, locale.code)
+        )
+      );
+    }
   };
 
   return (
@@ -90,6 +108,14 @@ const LocaleSelectionStep = ({
           <FormControl.ValidationMessage>Select target locales</FormControl.ValidationMessage>
         )}
       </FormControl>
+      <Switch
+        name="restrict-to-similar-locales"
+        id="restrict-to-similar-locales"
+        testId="restrict-to-similar-locales-switch"
+        isChecked={restrictToSimilarLocales}
+        onChange={(event) => onRestrictToggle(event.target.checked)}>
+        Only show locales similar to the source
+      </Switch>
     </Flex>
   );
 };

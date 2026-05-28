@@ -162,6 +162,42 @@ describe('Dialog component', () => {
     expect(screen.queryByRole('checkbox', { name: 'Spanish (Spain)' })).not.toBeInTheDocument();
   });
 
+  it('shows all locales as targets when the similarity filter is switched off', async () => {
+    const user = userEvent.setup();
+    mockSdk.locales.names = {
+      ...mockSdk.locales.names,
+      'en-GB': 'English (United Kingdom)',
+    };
+
+    await act(async () => {
+      render(<Dialog />);
+    });
+
+    const sourceSelect = screen.getByTestId('source-locale-select');
+    await user.selectOptions(sourceSelect, 'en-US');
+
+    // Switch off the "Only show locales similar to the source" toggle.
+    const restrictSwitch = screen.getByTestId('restrict-to-similar-locales-switch');
+    await user.click(restrictSwitch);
+
+    const targetTrigger = await screen.findByText('Select one or more');
+    await user.click(targetTrigger);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('checkbox', { name: 'English (United Kingdom)' })
+      ).toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: 'German' })).toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: 'French' })).toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: 'Spanish (Spain)' })).toBeInTheDocument();
+    });
+
+    // The source locale is still excluded from the target options.
+    expect(
+      screen.queryByRole('checkbox', { name: 'English (United States)' })
+    ).not.toBeInTheDocument();
+  });
+
   it('shows validation error when trying to proceed without selecting target locales', async () => {
     const user = userEvent.setup();
 
